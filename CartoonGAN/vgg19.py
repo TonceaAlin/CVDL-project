@@ -3,6 +3,7 @@ import os
 import time
 
 import numpy as np
+# noinspection PyUnresolvedReferences
 import tensorflow.compat.v1 as tf
 
 VGG_MEAN = [103.939, 116.779, 123.68]
@@ -10,13 +11,13 @@ VGG_MEAN = [103.939, 116.779, 123.68]
 
 class Vgg19:
 
-    def __init__(self, vgg19_npy_path="vgg19.py"):
-        # if vgg19_npy_path is None:
-        #     path = inspect.getfile(Vgg19)
-        #     path = os.path.abspath(os.path.join(path, os.pardir))
-        #     path = os.path.join(path, "vgg19.npy")
-        #     vgg19_npy_path = path
-        #     print(vgg19_npy_path)
+    def __init__(self, vgg19_npy_path=None):
+        if vgg19_npy_path is None:
+            path = inspect.getfile(Vgg19)
+            path = os.path.abspath(os.path.join(path, os.pardir))
+            path = os.path.join(path, "vgg19.npy")
+            vgg19_npy_path = path
+            print(vgg19_npy_path)
 
         self.data_dict = np.load(vgg19_npy_path, encoding='latin1', allow_pickle=True).item()
         print('Finished loading vgg19.npy')
@@ -84,7 +85,7 @@ class Vgg19:
         return tf.nn.max_pool(bottom, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name=name)
 
     def conv_layer(self, bottom, name):
-        with tf.compat.v1.variable_scope(name):
+        with tf.variable_scope(name):
             filt = self.get_conv_filter(name)
 
             conv = tf.nn.conv2d(bottom, filt, [1, 1, 1, 1], padding='SAME')
@@ -96,7 +97,7 @@ class Vgg19:
             return relu
 
     def fc_layer(self, bottom, name):
-        with tf.compat.v1.variable_scope(name):
+        with tf.variable_scope(name):
             shape = bottom.get_shape().as_list()
             dim = 1
             for d in shape[1:]:

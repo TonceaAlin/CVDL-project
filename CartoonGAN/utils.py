@@ -1,5 +1,5 @@
 import tensorflow.compat.v1 as tf
-from tensorflow.keras.initializers import GlorotNormal
+import tensorflow_addons as tfa
 import numpy as np
 import cv2.cv2 as cv2
 import os
@@ -30,10 +30,10 @@ def print_image(image, save_dir, name):
 
 
 def print_fused_image(image, save_dir, name, n):
-    """
+    '''
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    """
+    '''
     fused_dir = os.path.join(save_dir, name)
     fused_image = [0] * n
     for i in range(n):
@@ -66,7 +66,8 @@ def next_batch(batch_size, crop_size, filename_list):
         img_h, img_w = np.shape(image)[: 2]
         offset_h = np.random.randint(0, img_h - crop_size)
         offset_w = np.random.randint(0, img_w - crop_size)
-        image_crop = image[offset_h: offset_h + crop_size, offset_w: offset_w + crop_size]
+        image_crop = image[offset_h: offset_h + crop_size,
+                     offset_w: offset_w + crop_size]
         batch_data.append(image_crop / 127.5 - 1)
 
     return np.asarray(batch_data)
@@ -82,7 +83,8 @@ def next_blur_batch(batch_size, crop_size, filename_list):
         img_h, img_w = np.shape(image)[: 2]
         offset_h = np.random.randint(0, img_h - crop_size)
         offset_w = np.random.randint(0, img_w - crop_size)
-        image_crop = image[offset_h: offset_h + crop_size, offset_w: offset_w + crop_size]
+        image_crop = image[offset_h: offset_h + crop_size,
+                     offset_w: offset_w + crop_size]
         batch.append(image_crop / 127.5 - 1)
         image_blur = cv2.GaussianBlur(image_crop, (5, 5), 0)
         blur_batch.append(image_blur / 127.5 - 1)
@@ -94,7 +96,7 @@ def vgg_loss(image_a, image_b):
     vgg_a, vgg_b = Vgg19('vgg19.npy'), Vgg19('vgg19.npy')
     vgg_a.build(image_a)
     vgg_b.build(image_b)
-    VGG_loss = tf.reduce_mean(tf.compat.v1.losses.absolute_difference(vgg_a.conv4_4, vgg_b.conv4_4))
+    VGG_loss = tf.reduce_mean(tf.losses.absolute_difference(vgg_a.conv4_4, vgg_b.conv4_4))
     h = tf.cast(tf.shape(vgg_a.conv4_4)[1], tf.float32)
     w = tf.cast(tf.shape(vgg_a.conv4_4)[2], tf.float32)
     c = tf.cast(tf.shape(vgg_a.conv4_4)[3], tf.float32)
@@ -111,8 +113,8 @@ def spectral_norm(w, iteration=1):
     w_shape = w.shape.as_list()
     w = tf.reshape(w, [-1, w_shape[-1]])
 
-    u = tf.compat.v1.get_variable("u", [1, w_shape[-1]], initializer=tf.keras.initializers.TruncatedNormal,
-                                  trainable=False)
+    u = tf.get_variable("u", [1, w_shape[-1]], initializer=
+    tf.truncated_normal_initializer(), trainable=False)
 
     u_hat = u
     v_hat = None
@@ -133,11 +135,11 @@ def spectral_norm(w, iteration=1):
 
 
 def conv_sn(x, channels, k_size, stride=1, name='conv2d'):
-    with tf.compat.v1.variable_scope(name):
-        w = tf.compat.v1.get_variable("kernel", shape=[k_size, k_size, x.get_shape()[-1], channels],
-                                      initializer=GlorotNormal)
-        b = tf.compat.v1.get_variable("bias", [channels], initializer=tf.constant_initializer(0.0))
+    with tf.variable_scope(name):
+        w = tf.get_variable("kernel", shape=[k_size, k_size, x.get_shape()[-1], channels],
+                            initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        b = tf.get_variable("bias", [channels], initializer=tf.constant_initializer(0.0))
 
-        output = tf.compat.v1.nn.conv2d(input=x, filter=spectral_norm(w),
-                                        strides=[1, stride, stride, 1], padding='SAME') + b
+        output = tf.nn.conv2d(input=x, filter=spectral_norm(w),
+                              strides=[1, stride, stride, 1], padding='SAME') + b
         return output
