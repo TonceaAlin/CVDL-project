@@ -153,3 +153,6 @@ fabric.properties
 # cartoon frames
 frames/
 movies/
+data/
+/White-box-Cartoonization/test_code/test_images/
+/White-box-Cartoonization/test_code/saved_models/

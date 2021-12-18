@@ -4,6 +4,9 @@ import numpy as np
 import argparse
 import os
 import time
+import cv2.cv2 as cv2
+
+from matplotlib import pyplot as plt
 
 import model
 import utils
@@ -51,8 +54,8 @@ class CartoonGAN:
 
     def input_setup(self):
 
-        self.celebs_list = utils.get_filename_list('Data/Real')
-        self.cartoon_list = utils.get_filename_list('Data/Cartoons')
+        self.celeba_list = utils.get_filename_list('../data/celeba-v2')
+        self.cartoon_list = utils.get_filename_list('../data/getchu-v2')
         print('Finished loading data')
 
     def build_model(self):
@@ -87,7 +90,7 @@ class CartoonGAN:
         alpha = tf.random_uniform(shape=[self.batch_size, self.image_size,
                                            self.image_size, 3], minval=0., maxval=1.)
         interpolates = self.cartoon_input + (alpha * differences)
-        D_inter = model.patch_discriminator(interpolates, self.crop_size, 
+        D_inter = model.patch_discriminator(interpolates, self.crop_size,
                                       name='discriminator', reuse=True)
         gradients = tf.gradients(D_inter, [interpolates])[0]
         slopes = tf.sqrt(tf.reduce_sum(tf.square(gradients), reduction_indices=[1]))
@@ -141,7 +144,7 @@ class CartoonGAN:
                 print('Finished loading pre_trained model')
             else:
                 for iter in range(self.pre_train_iter):
-                    photo_batch = utils.next_batch(self.batch_size, self.image_size, self.celebs_list)
+                    photo_batch = utils.next_batch(self.batch_size, self.image_size, self.celeba_list)
                     cartoon_batch, blur_batch = utils.next_blur_batch(self.batch_size,
                                                                       self.image_size,
                                                                       self.cartoon_list)
@@ -160,6 +163,9 @@ class CartoonGAN:
                             batch_image = sess.run([self.fake_cartoon],
                                                    feed_dict={self.photo_input: photo_batch, self.is_train: True})
                             batch_image = np.squeeze(batch_image)
+                            print(batch_image.shape)
+                            print(np.min(batch_image))
+                            print(np.max(batch_image))
                             utils.print_fused_image(batch_image, self.train_out_dir, str(iter) + '_pre_train.png', 4)
 
                         if np.mod(iter + 1, self.pre_train_iter) == 0:
@@ -168,7 +174,7 @@ class CartoonGAN:
             # Training iterations
             for iter in range(self.iter):
 
-                photo_batch = utils.next_batch(self.batch_size, self.image_size, self.celebs_list)
+                photo_batch = utils.next_batch(self.batch_size, self.image_size, self.celeba_list)
                 cartoon_batch, blur_batch = utils.next_blur_batch(self.batch_size,
                                                                   self.image_size,
                                                                   self.cartoon_list)
@@ -206,7 +212,7 @@ class CartoonGAN:
         if not os.path.exists(self.test_out_dir):
             os.mkdir(self.test_out_dir)
 
-        self.test_list = utils.get_filename_list('Data/Real')
+        self.test_list = utils.get_filename_list('../data/test-v2')
 
         init = ([tf.global_variables_initializer(), tf.local_variables_initializer()])
         self.sess.run(init)

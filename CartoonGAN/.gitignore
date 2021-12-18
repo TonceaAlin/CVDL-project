@@ -12,12 +12,6 @@ dist
 build
 
 #generated folders
-saved_models
-saved_results
-pretrain_models
-pretrain_results
-train_log
-pretrain_log
-Data
-train_output
+__pycache__
+data
 vgg19.npy

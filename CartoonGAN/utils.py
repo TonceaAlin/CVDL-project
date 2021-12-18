@@ -1,5 +1,4 @@
 import tensorflow.compat.v1 as tf
-import tensorflow_addons as tfa
 import numpy as np
 import cv2.cv2 as cv2
 import os
@@ -64,6 +63,8 @@ def next_batch(batch_size, crop_size, filename_list):
     for i in range(batch_size):
         image = cv2.imread(filename_list[idx[i]])
         img_h, img_w = np.shape(image)[: 2]
+        if np.max(image) < 1.5:
+            image = (image+1)*127.5
         offset_h = np.random.randint(0, img_h - crop_size)
         offset_w = np.random.randint(0, img_w - crop_size)
         image_crop = image[offset_h: offset_h + crop_size,
