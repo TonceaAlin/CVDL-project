@@ -23,7 +23,7 @@ def arg_parser():
     parser.add_argument("--pre_train_iter", default=20000, type=int)
     parser.add_argument("--iter", default=100000, type=int)
     parser.add_argument("--learning_rate", default=1e-4, type=float)
-    parser.add_argument("--gpu_fraction", default=0.5, type=float)
+    parser.add_argument("--gpu_fraction", default=0.75, type=float)
     parser.add_argument("--save_dir", default='saved_models')
     parser.add_argument("--train_out_dir", default='train_output')
     parser.add_argument("--test_out_dir", default='test_output')

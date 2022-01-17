@@ -126,7 +126,6 @@ pip-selfcheck.json
 .idea/libraries
 
 # Mongo Explorer plugin:
-.idea/mongoSettings.xml
 
 .idea/
 

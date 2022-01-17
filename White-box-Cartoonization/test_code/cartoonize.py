@@ -5,6 +5,7 @@ import tensorflow.compat.v1 as tf
 import network
 import guided_filter
 from tqdm import tqdm
+tf.disable_eager_execution()
 
 
 
